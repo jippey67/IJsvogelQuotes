@@ -48,5 +48,6 @@ binance.websockets.trades(markets, (trades) => {
     collection.insertOne(update, (err, result) => {
       //console.log('database returns: '+result)
     });
+    db.close();
   });
 });
