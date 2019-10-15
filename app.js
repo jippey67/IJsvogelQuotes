@@ -23,6 +23,8 @@ for (var i = 0; i < markets.length; i++) {
 
 console.log(currentQuotes);
 
+var updateArray = [];
+
 binance.websockets.trades(markets, (trades) => {
   let {e:eventType, E:eventTime, s:symbol, p:price, q:quantity, m:maker, a:tradeId} = trades;
   console.log(eventTime+" "+symbol+" trade update. price: "+price+", quantity: "+quantity+", maker: "+maker);
@@ -32,9 +34,16 @@ binance.websockets.trades(markets, (trades) => {
     'source':symbol,
     'levels':currentQuotes
   };
-  console.log(update)
+  console.log(updateArray.length);
+  updateArray.push(update);
+  if (updateArray.length === 100) {
+    sendToDb(updateArray);
+    updateArray = []
+  }
+});
 
 
+function sendToDb(arr) {
   MongoClient.connect(uri, {
       useNewUrlParser: true,
       useUnifiedTopology: true
@@ -43,11 +52,13 @@ binance.websockets.trades(markets, (trades) => {
       console.error(err)
       return
     }
-    const db = client.db('IJsvogel')
+    console.log('database accessed');
+    const db = client.db('IJsvogel');
     const collection = db.collection('quotes')
-    collection.insertOne(update, (err, result) => {
+    collection.insertMany(arr, (err, result) => {
       //console.log('database returns: '+result)
     });
-    db.close();
+    client.close();
   });
-});
+
+};
