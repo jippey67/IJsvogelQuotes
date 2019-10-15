@@ -36,7 +36,7 @@ binance.websockets.trades(markets, (trades) => {
   };
   console.log(updateArray.length);
   updateArray.push(update);
-  if (updateArray.length === 100) {
+  if (updateArray.length === 1000) {
     sendToDb(updateArray);
     updateArray = []
   }
@@ -58,7 +58,7 @@ function sendToDb(arr) {
     collection.insertMany(arr, (err, result) => {
       //console.log('database returns: '+result)
     });
-    client.close();
+    console.log('closed?: ',client.close());
   });
 
 };
